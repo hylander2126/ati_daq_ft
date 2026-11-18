@@ -82,6 +82,7 @@ def test_ros_calibrated_replay_and_retained_health(
         command += [name + ":=" + value for name, value in parameters.items()]
     else:
         command = [executable, "--ros-args", "-r", "__ns:=" + namespace]
+        parameters.update(axes_frame="tool0", mount_profile_sha256="a" * 64)
         for name, value in parameters.items():
             command += ["-p", name + ":=" + value]
     proc = subprocess.Popen(
@@ -121,6 +122,8 @@ def test_ros_calibrated_replay_and_retained_health(
             and states[-1]["sensor_serial"] == "SYNTHETIC_TEST_ONLY"
         )
         assert states[-1]["calibration_sha256"]
+        assert states[-1]["axes_frame"] == ("ft_sensor" if via_launch else "tool0")
+        assert states[-1]["mount_profile_sha256"] == ("" if via_launch else "a" * 64)
         # A late subscriber must also receive the final not-ready state.
         late = []
         observer.create_subscription(

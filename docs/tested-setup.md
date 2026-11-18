@@ -69,6 +69,24 @@ Exact metrics and image identity: [validation record](container-validation.json)
 See [container commands](container-test.md). Docker validates independent userspace
 installation; it still shares the host kernel and USB permissions.
 
+Single-source migration (2026-11-18):
+
+- The IRB workspace source link now selects this repository. Robot-specific mount
+  validation lives in `irb120_control`; the driver reports the supplied axes and
+  mounting-profile hash for its provenance checks.
+- Both system NI resource links select `~/.local/share/ati_daq_ft/runtime`.
+  Calibration/certificate and recorded captures live under
+  `~/.local/share/ati_daq_ft/{calibration,records}`; GUI settings are under
+  `~/.config/ati_daq_ft`.
+- Both ROS packages build, and 23 relevant driver/robot software checks pass with
+  the original source folder renamed out of the way. No robot nodes are started.
+- With the original folder unavailable, ROS acquisition delivered 1,502 messages
+  at about 500.3 Hz with zero reported drops and clean shutdown. The optional
+  terminal reader produced calibrated samples; the GUI displayed the calibrated
+  FT61253 stream and closed cleanly in a virtual display.
+- The original folder was then deleted. Its calibration, certificate, recorded
+  captures and hardware-check data were preserved outside the source repository.
+
 Not verified: clean-host udev setup, physical unplug/reload with the new package,
 other DAQs/sensors/OS/ROS distributions, sustained latency, external time
 synchronization, robot frame geometry, gravity compensation, or robot control.

@@ -44,5 +44,10 @@ setup(
     maintainer_email="stevenhyland1@gmail.com",
     description="ATI DAQ F/T sensor driver for ROS 2 and NI USB-621x",
     license="MIT",
-    entry_points={"console_scripts": ["ati_daq_node = ati_daq_ft.bootstrap:main"]},
+    entry_points={
+        "console_scripts": [
+            "ati_daq_node = ati_daq_ft.bootstrap:main",
+            "ati_daq_reader = ati_daq_ft.bootstrap:reader_main",
+        ]
+    },
 )

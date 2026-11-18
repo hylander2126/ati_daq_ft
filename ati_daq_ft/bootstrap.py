@@ -5,12 +5,20 @@ import sys
 from .runtime import environment
 
 
-def main():
+def run(module):
     env = os.environ.copy()
     env.update(environment())
     # Keep the working directory from shadowing the installed native library.
     os.execve(
         sys.executable,
-        [sys.executable, "-P", "-m", "ati_daq_ft.node", *sys.argv[1:]],
+        [sys.executable, "-P", "-m", module, *sys.argv[1:]],
         env,
     )
+
+
+def main():
+    run("ati_daq_ft.node")
+
+
+def reader_main():
+    run("ati_daq_ft.desktop")

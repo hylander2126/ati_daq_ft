@@ -3,7 +3,8 @@
 The public package has no PyPI runtime dependencies beyond the ROS build's
 setuptools. It uses Python's standard library for CSV, XML preflight checks,
 threading, configuration, and loading the native libraries. There is no NumPy,
-SciPy, PyDAQmx, nidaqmx Python package, requests, GUI toolkit, or robot stack.
+SciPy, PyDAQmx, nidaqmx Python package, requests, or robot stack. The optional desktop display imports Tkinter only when
+`--gui` is selected; ROS and terminal acquisition do not need it.
 
 | Component | Needed for | Why retained / what was removed |
 | --- | --- | --- |
@@ -21,6 +22,7 @@ SciPy, PyDAQmx, nidaqmx Python package, requests, GUI toolkit, or robot stack.
 | System `libexpat.so.1` | ROS/native coexistence | Loaded before LabVIEW's old exported expat symbols. All other loader settings remain local to the node. |
 | `libarchive-tools` (`bsdtar`), `dpkg-deb` | One-time setup | Read ISO/RPM/deb files. They are not node runtime requirements. `usbutils` is a diagnostic convenience. |
 | `udev` | Hardware system setup | Required explicitly by NI's USB package installer and for applying the device-access rule. Containers write the rule and skip daemon reload. |
+| `python3-tk` | Optional GUI only | Standard-library Tkinter display; never imported by the ROS node or terminal reader. |
 | pytest, `ament_index_python` | Tests only | Pure conversion tests plus an actual ROS replay subprocess. |
 
 The ATI library includes an old Expat copy, bound internally with `-Bsymbolic` so

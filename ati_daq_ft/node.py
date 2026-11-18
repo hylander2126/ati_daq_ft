@@ -4,8 +4,6 @@ import hashlib
 import json
 import queue
 import signal
-import subprocess
-import sys
 import threading
 import time
 from pathlib import Path
@@ -22,6 +20,7 @@ from rcl_interfaces.msg import ParameterDescriptor
 
 from .core import AnalogReader, Calibration, initialize_runtime
 from .model import ReplayReader, transform_wrench
+from .firmware import ensure_loaded
 
 
 class ATIDAQNode(Node):
@@ -37,6 +36,8 @@ class ATIDAQNode(Node):
             "sample_rate": 500.0,
             "block_size": 5,
             "frame_id": "ft_sensor",
+            "axes_frame": "",
+            "mount_profile_sha256": "",
             "rotation_xyzw": [0.0, 0.0, 0.0, 1.0],
             "sensor_origin_in_output_m": [0.0, 0.0, 0.0],
             "source": "hardware",
@@ -146,19 +147,7 @@ class ATIDAQNode(Node):
             if self.cfg["source"] == "replay":
                 reader = ReplayReader(self.cfg["replay_csv"])
             else:
-                # Firmware is RAM-only. Bootstrap's environment is inherited here.
-                if any(
-                    p.read_text().strip() == "7269"
-                    for p in Path("/sys/bus/usb/devices").glob("*/idProduct")
-                    if (p.parent / "idVendor").exists()
-                    and (p.parent / "idVendor").read_text().strip() == "3923"
-                ):
-                    subprocess.run(
-                        [sys.executable, "-m", "ati_daq_ft.firmware"],
-                        check=True,
-                        timeout=15,
-                    )
-                    self.stop.wait(2)
+                ensure_loaded()
                 if self.stop.is_set():
                     return
                 reader = AnalogReader(
@@ -290,6 +279,8 @@ class ATIDAQNode(Node):
             "calibration_sha256": self.cal_hash,
             "temperature_compensation": self.cal.tempcomp if self.cal else None,
             "frame_id": self.cfg["frame_id"],
+            "axes_frame": self.cfg["axes_frame"] or self.cfg["frame_id"],
+            "mount_profile_sha256": self.cfg["mount_profile_sha256"],
             "sensor_origin_in_output_m": self.cfg["sensor_origin_in_output_m"],
             "rotation_xyzw": self.cfg["rotation_xyzw"],
             "configured_sample_rate_hz": self.cfg["sample_rate"],

@@ -19,6 +19,8 @@ def launch_setup(context):
             "device",
             "terminal",
             "frame_id",
+            "axes_frame",
+            "mount_profile_sha256",
             "source",
             "replay_csv",
         )
@@ -57,6 +59,8 @@ def generate_launch_description():
         "device": "Dev1",
         "terminal": "diff",
         "frame_id": "ft_sensor",
+        "axes_frame": "",
+        "mount_profile_sha256": "",
         "sample_rate": "500.0",
         "block_size": "5",
         "source": "hardware",

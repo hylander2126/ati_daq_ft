@@ -60,7 +60,8 @@ gravity/tool compensation. To report at a different frame/origin, set
 `rotation_xyzw` and `sensor_origin_in_output_m` from your measured mounting geometry
 and set `frame_id` accordingly. The translation is the vector from the output
 origin to the sensor origin, expressed in output axes; torque includes `r × F`.
-The driver does not publish or look up TF.
+The driver does not publish or look up TF. Optional `axes_frame` and
+`mount_profile_sha256` parameters retain externally supplied mapping metadata.
 
 Timestamps are inferred from the hardware scan period and a host-receipt anchor;
 they are not synchronized hardware timestamps. A bounded queue drops old batches.
@@ -84,6 +85,21 @@ ros2 launch ati_daq_ft ati_daq_ft.launch.py source:=replay \
 This finite example is **synthetic**, labels state as simulated, and clears
 readiness at EOF. Its identity matrix is a test fixture, never a physical sensor
 calibration. The fixture uses N and N-mm internally; published torques are N·m.
+
+## Optional desktop / terminal reader
+
+The same acquisition and calibration core also provides a terminal reader:
+
+```bash
+ros2 run ati_daq_ft ati_daq_reader --cal /absolute/path/to/your_sensor.cal --seconds 10
+```
+
+Add `--gui` for the desktop display, or `--csv capture.csv` to write a new capture
+file. The GUI alone needs the optional `python3-tk` Ubuntu package. Its settings
+are stored in `~/.config/ati_daq_ft/reader.json`; calibration files stay outside the
+repository. Both interfaces use the same exclusive DAQ lock as the ROS node.
+After a hardware error, correct the problem and restart the reader. No automatic
+tare is performed; `--tare` requests terminal tare, and the GUI has explicit controls.
 
 ## Troubleshooting
 
