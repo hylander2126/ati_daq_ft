@@ -1,0 +1,2 @@
+<!-- SYNTHETIC replay fixture. Never use with a physical sensor. -->
+<FTSensor Serial="SYNTHETIC_TEST_ONLY" BodyStyle="Gamma" NumGages="6" Family="DAQ"><Calibration PartNumber="TEST" CalDate="TEST" ForceUnits="N" TorqueUnits="N-mm" DistUnits="mm"><BasicTransform/><Axis Name="Fx" values="1 0 0 0 0 0"/><Axis Name="Fy" values="0 1 0 0 0 0"/><Axis Name="Fz" values="0 0 1 0 0 0"/><Axis Name="Tx" values="0 0 0 1 0 0"/><Axis Name="Ty" values="0 0 0 0 1 0"/><Axis Name="Tz" values="0 0 0 0 0 1"/></Calibration></FTSensor>

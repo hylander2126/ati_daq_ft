@@ -1,0 +1,35 @@
+{
+  "iso": {
+    "url": "https://download.ni.com/support/softlib/multifunction_daq/nidaqmxbase/15.0/linux/nidaqmxbase-15.0.0.iso",
+    "sha256": "594b1c07093be56fdfec783b224bd5db2c5509b95e0d30475dd5342b6efb97fa"
+  },
+  "deb": [
+    {
+      "name": "libvisa",
+      "url": "https://download.ni.com/ni-linux-desktop/2026/Q4/deb/ni/noble/pool/ni/libv/libvisa/libvisa_26.8.0.49315-0+f163_amd64.deb",
+      "sha256": "932233d364debee3ec18ca47893a8c38b5d4e11a4d3e474e1b14bfadadb78de9"
+    },
+    {
+      "name": "libvisa-data",
+      "url": "https://download.ni.com/ni-linux-desktop/2026/Q4/deb/ni/noble/pool/ni/libv/libvisa-data/libvisa-data_26.8.0.49315-0+f163_all.deb",
+      "sha256": "e86787c4055d53c76d0561da882995fbf9362bccdac8b0a97c097d4cfbd27e55"
+    },
+    {
+      "name": "ni-pal",
+      "url": "https://download.ni.com/ni-linux-desktop/2026/Q4/deb/ni/noble/pool/ni/n/ni-pal/ni-pal_26.8.0.49360-0+f208_amd64.deb",
+      "sha256": "558fbbb01bddb6218f9370289b1b30472b9485cd21cf3c862f005d21cf7351aa"
+    },
+    {
+      "name": "ni-visa-passport-usb",
+      "url": "https://download.ni.com/ni-linux-desktop/2026/Q4/deb/ni/noble/pool/ni/n/ni-visa-passport-usb/ni-visa-passport-usb_26.8.0.49315-0+f163_amd64.deb",
+      "sha256": "3fbab7784c064ee2d3c1727ad8e208cc9794bfe2b561703319cee0be00aadbb4"
+    }
+  ],
+  "rpm": {
+    "nidaqmxbase-cinterface-15.0.0-f1.x86_64.rpm": "8caf3b4fbed80618b282bdf48ed86922c92066bd4dc4b9fec93a5c0ba9afdfb8",
+    "nidaqmxbase-usb-support-15.0.0-f1.x86_64.rpm": "0a47b60d57406122587dc2dc0edffb116eaee657d19a5e1f387df1e2cf8fc7ef",
+    "nidaqmxbase-board-support-15.0.0-f1.x86_64.rpm": "4b988f1b721281f79042ac8b9aff4c2f97ae730558979b686274b7e4ad32cf16",
+    "nidaqmxbase-common-15.0.0-f1.x86_64.rpm": "813a66c2497203bdf4162d20395bb12f6b8c3aa71d0097b45b84cb050133a751",
+    "labview-2015-rte-15.0.0-2.x86_64.rpm": "41f109be263da45c6bbcc5af0f933bb5ddcdf1fdadeb78ccb5ab331fe68a293c"
+  }
+}
