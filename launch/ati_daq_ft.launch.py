@@ -21,8 +21,6 @@ def launch_setup(context):
             "frame_id",
             "axes_frame",
             "mount_profile_sha256",
-            "source",
-            "replay_csv",
         )
     }
     params.update(
@@ -63,8 +61,6 @@ def generate_launch_description():
         "mount_profile_sha256": "",
         "sample_rate": "500.0",
         "block_size": "5",
-        "source": "hardware",
-        "replay_csv": "",
         "rotation_xyzw": "[0,0,0,1]",
         "sensor_origin_in_output_m": "[0,0,0]",
         "allow_driver_tare": "false",

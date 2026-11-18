@@ -1,6 +1,5 @@
-"""ROS-independent frame mapping, calibration provenance, and replay input."""
+"""Rotate a wrench and shift its torque reference point."""
 
-import csv
 import math
 
 
@@ -27,27 +26,3 @@ def transform_wrench(wrench, rotation, origin):
     fx, fy, fz = force
     shift = [b * fz - c * fy, c * fx - a * fz, a * fy - b * fx]
     return force + [t + s for t, s in zip(torque, shift)]
-
-
-class ReplayReader:
-    """Explicit test input. Never accesses a DAQ; EOF is reported to the node."""
-
-    def __init__(self, path):
-        with open(path, newline="") as f:
-            self.rows = [
-                [float(r[f"ai{i}_V"]) for i in range(7)] for r in csv.DictReader(f)
-            ]
-        if not self.rows or not all(math.isfinite(v) for row in self.rows for v in row):
-            raise ValueError("Replay needs finite ai0_V through ai6_V columns")
-        self.index = 0
-        self.serial = "REPLAY"
-
-    def read_block(self):
-        if self.index == len(self.rows):
-            raise EOFError("Replay complete")
-        row = self.rows[self.index]
-        self.index += 1
-        return [row]
-
-    def close(self):
-        pass

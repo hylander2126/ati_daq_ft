@@ -13,7 +13,6 @@ runtime/
 downloads/
 *.cal
 *.csv
-!examples/replay.csv
 *.iso
 *.rpm
 *.deb

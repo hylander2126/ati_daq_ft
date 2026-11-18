@@ -19,7 +19,7 @@ from std_srvs.srv import SetBool
 from rcl_interfaces.msg import ParameterDescriptor
 
 from .core import AnalogReader, Calibration, initialize_runtime
-from .model import ReplayReader, transform_wrench
+from .model import transform_wrench
 from .firmware import ensure_loaded
 
 
@@ -40,8 +40,6 @@ class ATIDAQNode(Node):
             "mount_profile_sha256": "",
             "rotation_xyzw": [0.0, 0.0, 0.0, 1.0],
             "sensor_origin_in_output_m": [0.0, 0.0, 0.0],
-            "source": "hardware",
-            "replay_csv": "",
             "allow_driver_tare": False,
             "stale_timeout": 0.25,
         }
@@ -49,8 +47,6 @@ class ATIDAQNode(Node):
             k: self.declare_parameter(k, v, ParameterDescriptor(read_only=True)).value
             for k, v in defaults.items()
         }
-        if self.cfg["source"] not in ("hardware", "replay"):
-            raise ValueError("source must be hardware or replay")
         if not 0 < float(self.cfg["sample_rate"]) <= 10000:
             raise ValueError("Invalid sample_rate")
         if not 1 <= int(self.cfg["block_size"]) <= 1000:
@@ -111,13 +107,12 @@ class ATIDAQNode(Node):
                 self.cal = None
             self.error = f"Calibration unavailable: {e}"
         self.hardware_error = None
-        if self.cfg["source"] == "hardware":
-            try:
-                # ROS/DDS is initialized; keep NI's initializing thread alive to exit.
-                initialize_runtime()
-            except Exception as e:
-                self.hardware_error = str(e)
-                self.error = self.hardware_error
+        try:
+            # ROS/DDS is initialized; keep NI's initializing thread alive to exit.
+            initialize_runtime()
+        except Exception as e:
+            self.hardware_error = str(e)
+            self.error = self.hardware_error
         self.publish_state()
         self.thread = threading.Thread(
             target=self.acquire, name="ati-acquisition", daemon=True
@@ -144,19 +139,16 @@ class ATIDAQNode(Node):
         try:
             if self.hardware_error:
                 raise RuntimeError(self.hardware_error)
-            if self.cfg["source"] == "replay":
-                reader = ReplayReader(self.cfg["replay_csv"])
-            else:
-                ensure_loaded()
-                if self.stop.is_set():
-                    return
-                reader = AnalogReader(
-                    self.cfg["device"],
-                    self.cfg["terminal"],
-                    self.cfg["sample_rate"],
-                    self.cfg["block_size"],
-                    self.cfg["daq_serial"],
-                )
+            ensure_loaded()
+            if self.stop.is_set():
+                return
+            reader = AnalogReader(
+                self.cfg["device"],
+                self.cfg["terminal"],
+                self.cfg["sample_rate"],
+                self.cfg["block_size"],
+                self.cfg["daq_serial"],
+            )
             self.daq_serial = reader.serial
             anchor = None
             scan = 0
@@ -166,10 +158,6 @@ class ATIDAQNode(Node):
             while not self.stop.is_set():
                 rows = reader.read_block()
                 acquired = time.monotonic()
-                if self.cfg["source"] == "replay" and self.stop.wait(
-                    1 / float(self.cfg["sample_rate"])
-                ):
-                    break
                 if anchor is None:
                     anchor = self.get_clock().now().nanoseconds - round(
                         (len(rows) - 1) * period
@@ -271,8 +259,8 @@ class ATIDAQNode(Node):
         state = {
             "ready": self.ready,
             "error": self.error,
-            "source": self.cfg["source"],
-            "simulated": self.cfg["source"] == "replay",
+            "source": "hardware",
+            "simulated": False,
             "sensor_serial": self.cal.serial if self.cal else None,
             "daq_serial": self.daq_serial,
             "calibration_file": self.cfg["calibration_file"],

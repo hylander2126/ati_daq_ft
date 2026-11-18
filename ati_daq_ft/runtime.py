@@ -1,4 +1,4 @@
-"""NI loader settings for this process only; replay needs none of these files."""
+"""NI loader settings scoped to the reader process."""
 
 import os
 from pathlib import Path
@@ -46,6 +46,6 @@ def require_runtime():
     missing = [str(root / name) for name in required if not (root / name).is_file()]
     if missing:
         raise RuntimeError(
-            "NI runtime missing; follow docs/hardware.md or set "
+            "NI runtime missing; follow README.md or set "
             "ATI_DAQ_FT_RUNTIME. Missing: " + ", ".join(missing)
         )

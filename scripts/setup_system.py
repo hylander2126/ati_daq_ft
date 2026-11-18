@@ -13,11 +13,6 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runtime", required=True, type=Path)
     parser.add_argument("--cache", required=True, type=Path)
-    parser.add_argument(
-        "--skip-udev-reload",
-        action="store_true",
-        help="Write the rule but skip reload/trigger in a container without a udev daemon",
-    )
     args = parser.parse_args()
     if os.geteuid() != 0:
         parser.error("Run this one-time system setup with sudo")
@@ -32,7 +27,7 @@ def main():
     for link, target in links.items():
         if (link.exists() or link.is_symlink()) and link.resolve() != target:
             parser.error(
-                f"{link} already exists and points elsewhere. See docs/hardware.md."
+                f"{link} already exists and points elsewhere. See README.md."
             )
     manifest = json.loads((HERE / "ni-runtime.json").read_text())
     packages = []
@@ -55,19 +50,18 @@ def main():
         'ATTR{idProduct}=="7269|726f", GROUP="plugdev", '
         'MODE="0660", TAG+="uaccess"\n'
     )
-    if not args.skip_udev_reload:
-        subprocess.run(["udevadm", "control", "--reload-rules"], check=True)
-        subprocess.run(
-            [
-                "udevadm",
-                "trigger",
-                "--action=change",
-                "--subsystem-match=usb",
-                "--attr-match=idVendor=3923",
-            ],
-            check=True,
-        )
-        subprocess.run(["udevadm", "settle"], check=True)
+    subprocess.run(["udevadm", "control", "--reload-rules"], check=True)
+    subprocess.run(
+        [
+            "udevadm",
+            "trigger",
+            "--action=change",
+            "--subsystem-match=usb",
+            "--attr-match=idVendor=3923",
+        ],
+        check=True,
+    )
+    subprocess.run(["udevadm", "settle"], check=True)
     print("VISA USB transport and USB-621x permissions configured. Replug the DAQ.")
 
 
