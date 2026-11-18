@@ -11,6 +11,35 @@ import xml.etree.ElementTree as ET
 from .runtime import require_runtime
 from importlib.machinery import EXTENSION_SUFFIXES
 
+_runtime_libraries = None
+
+
+def initialize_runtime():
+    """Load the NI libraries once, after ROS/DDS initialization."""
+    global _runtime_libraries
+    if _runtime_libraries is None:
+        require_runtime()
+        dark = C.CDLL("liblvrtdark.so", mode=C.RTLD_GLOBAL)
+        lv = C.CDLL("libnidaqmxbaselv.so", mode=C.RTLD_GLOBAL)
+        msg = C.create_string_buffer(4096)
+        if lv.LVDLLStatus(msg, len(msg), None):
+            raise RuntimeError(
+                "NI runtime could not load: " + msg.value.decode(errors="replace")
+            )
+        _runtime_libraries = dark, lv, C.CDLL("libnidaqmxbase.so")
+    return _runtime_libraries
+
+
+def shutdown_runtime():
+    """Release VI references while their acquisition thread is still alive."""
+    global _runtime_libraries
+    if _runtime_libraries is not None:
+        lv = _runtime_libraries[1]
+        lv.LVDLLUninit.argtypes = []
+        lv.LVDLLUninit.restype = None
+        lv.LVDLLUninit()
+        _runtime_libraries = None
+
 
 class AnalogReader:
     def __init__(
@@ -57,15 +86,7 @@ class AnalogReader:
             raise
 
     def _open(self, device, terminal, expected_serial):
-        # LabVIEW resolves generated VI symbols in the global symbol namespace.
-        C.CDLL("liblvrtdark.so", mode=C.RTLD_GLOBAL)
-        self.lv = C.CDLL("libnidaqmxbaselv.so", mode=C.RTLD_GLOBAL)
-        msg = C.create_string_buffer(4096)
-        if self.lv.LVDLLStatus(msg, len(msg), None):
-            raise RuntimeError(
-                "NI runtime could not load: " + msg.value.decode(errors="replace")
-            )
-        self.lib = C.CDLL("libnidaqmxbase.so")
+        _, self.lv, self.lib = initialize_runtime()
         self.task = C.c_void_p()
         self.lib.DAQmxBaseCreateTask.argtypes = [C.c_char_p, C.POINTER(C.c_void_p)]
         self.lib.DAQmxBaseCreateAIVoltageChan.argtypes = [
@@ -185,6 +206,7 @@ class AnalogReader:
             self.lib.DAQmxBaseStopTask(self.task)
             self.lib.DAQmxBaseClearTask(self.task)
             self.task = C.c_void_p()
+        shutdown_runtime()
         if hasattr(self, "_lock") and not self._lock.closed:
             self._lock.close()
 

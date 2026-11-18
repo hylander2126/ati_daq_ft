@@ -10,11 +10,12 @@ From this repository, install the one-time archive extraction tool and USB
 diagnostic utility:
 
 ```bash
-sudo apt install libarchive-tools usbutils
+sudo apt install libarchive-tools usbutils udev
 python3 scripts/prepare_runtime.py
 ```
 
 The Python script uses only the standard library plus `bsdtar` and `dpkg-deb`.
+NI's USB package installer and the USB access rule require `udev`.
 It verifies pinned SHA-256 hashes for the ISO, its five RPMs, and four modern NI
 Debian packages. It extracts the selected runtime files to
 `~/.local/share/ati_daq_ft/runtime`; downloads stay in `~/.cache/ati_daq_ft`.

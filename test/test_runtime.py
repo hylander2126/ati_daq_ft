@@ -39,3 +39,26 @@ def test_other_owner_prevents_loading_hardware(tmp_path, monkeypatch):
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         with pytest.raises(RuntimeError, match="already in use"):
             core.AnalogReader()
+
+
+def test_native_client_released_after_task_and_only_once(monkeypatch):
+    from types import SimpleNamespace
+
+    events = []
+
+    class Uninit:
+        def __call__(self):
+            events.append("uninit")
+
+    monkeypatch.setattr(
+        core, "_runtime_libraries", (None, SimpleNamespace(LVDLLUninit=Uninit()), None)
+    )
+    reader = object.__new__(core.AnalogReader)
+    reader.task = ctypes.c_void_p(1)
+    reader.lib = SimpleNamespace(
+        DAQmxBaseStopTask=lambda task: events.append("stop"),
+        DAQmxBaseClearTask=lambda task: events.append("clear"),
+    )
+    reader.close()
+    reader.close()
+    assert events == ["stop", "clear", "uninit"]

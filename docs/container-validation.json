@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-18",
+  "base_image": "ros:jazzy-ros-base@sha256:00b8d47a6e6384a2834e3d01fa87ae767876543baa574f2d64a75c04ea33c698",
+  "hardware_image_id": "sha256:fb99ad2e55fdda14f1d6efb0b73deaed9841cf9611f14e2db88f6db438fdf924",
+  "software_tests_passed": 13,
+  "non_root_uid": 1000,
+  "supplementary_usb_group": 46,
+  "host_mounts": [
+    "matching sensor calibration, read-only"
+  ],
+  "usb_devices_exposed": [
+    "3923:726f, serial 023CF58E"
+  ],
+  "privileged": false,
+  "network": "none",
+  "hardware": {
+    "package_prefix": "/ws/install/ati_daq_ft",
+    "sample_count": 1506,
+    "observer_duration_s": 3.0077632059983443,
+    "observer_rate_hz": 500.37183678508916,
+    "scan_stamp_step_ns": [
+      2000000
+    ],
+    "latest_state": {
+      "ready": true,
+      "error": "",
+      "source": "hardware",
+      "simulated": false,
+      "sensor_serial": "FT61253",
+      "daq_serial": "023CF58E",
+      "calibration_file": "/sensor.cal",
+      "calibration_sha256": "b0a51825d1541e69b7a5a5cd8040980822a9789dcc458289f27f765f9f264d61",
+      "temperature_compensation": false,
+      "frame_id": "ft_sensor",
+      "sensor_origin_in_output_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_xyzw": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "configured_sample_rate_hz": 500.0,
+      "observed_delivery_rate_hz": 499.9989986252506,
+      "received_samples": 1275,
+      "published_samples": 1275,
+      "dropped_samples": 0,
+      "tare_active": false,
+      "timestamp_basis": "host receipt anchor + hardware scan period; not hardware absolute time"
+    }
+  },
+  "driver_shutdown_clean": true,
+  "host_packages_and_existing_ni_configuration_unchanged": true,
+  "original_reader_after_test": "passed",
+  "not_verified": [
+    "fresh-host udev setup",
+    "physical unplug and firmware reload",
+    "long-duration acquisition"
+  ]
+}

@@ -1,0 +1,17 @@
+.git
+**/__pycache__
+**/*.pyc
+**/*.so
+**/*.egg-info
+.pytest_cache
+.ruff_cache
+build
+install
+log
+dist
+runtime
+downloads
+*.cal
+*.iso
+*.rpm
+*.deb

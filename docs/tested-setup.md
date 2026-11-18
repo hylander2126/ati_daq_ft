@@ -41,6 +41,34 @@ The original installation had VISA's LabVIEW control package installed. The new
 setup omits it: the acquisition trace does not load it. The new system installer
 has not been run over the development machine's existing NI configuration.
 
-Not verified: a clean-machine system installation, physical unplug/reload with the
-new package, other DAQs/sensors/OS/ROS distributions, sustained latency, external
-time synchronization, robot frame geometry, gravity compensation, or robot control.
+Docker verification (2026-11-18):
+
+- Fresh ROS Jazzy/Ubuntu 24.04 userspace, without host NI libraries or workspaces
+  mounted. The software stage builds and passes all 13 tests before NI is installed.
+- The hardware stage downloads the pinned NI packages, prepares its own runtime,
+  installs VISA core/data/USB, and creates its own NI resource links. The container
+  installer skips udev reload, while writing the rule inside the image.
+- A non-root process (UID 1000, supplementary USB group 46) reads FT61253 through
+  one explicitly exposed USB device. The final check received 1,506 calibrated
+  messages over 3.0078 seconds (about 500.4 Hz), with zero reported drops, and
+  the driver exited cleanly. The calibration is a read-only file mount;
+  there is no host networking or privileged container mode.
+- This exposed NI's installer assumption that `/etc/modprobe.d` exists. The setup
+  script now creates that directory without adding an unnecessary tool package.
+- The native exit trace exposed a LabVIEW teardown crash after the acquisition
+  thread ended. The driver explicitly releases the generated VI client after
+  clearing the DAQ task, before the worker exits. Signal handling keeps ROS valid
+  through cleanup and tolerates launch forwarding a terminal interrupt twice.
+  Software and manual hardware checks assert clean process shutdown as well as
+  successful acquisition.
+- Host package versions, existing NI configuration/links, USB rules and robot
+  workspace link are compared against a saved baseline. The original desktop/CLI
+  reader is also checked separately.
+
+Exact metrics and image identity: [validation record](container-validation.json).
+See [container commands](container-test.md). Docker validates independent userspace
+installation; it still shares the host kernel and USB permissions.
+
+Not verified: clean-host udev setup, physical unplug/reload with the new package,
+other DAQs/sensors/OS/ROS distributions, sustained latency, external time
+synchronization, robot frame geometry, gravity compensation, or robot control.

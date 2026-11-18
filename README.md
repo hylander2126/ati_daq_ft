@@ -110,5 +110,7 @@ colcon test-result --verbose
 
 Tests use synthetic input and do not open USB. See [dependency audit](docs/dependencies.md)
 for why each external component is retained and [tested setup](docs/tested-setup.md)
-for verification scope. The source is MIT licensed. The bundled ATI/Expat sources
+for verification scope. The [Docker test recipe](docs/container-test.md) checks a
+fresh userspace installation without replacing your host's NI setup.
+The source is MIT licensed. The bundled ATI/Expat sources
 retain their original notices; downloaded NI software has separate vendor terms.

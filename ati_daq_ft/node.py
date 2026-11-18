@@ -3,6 +3,7 @@
 import hashlib
 import json
 import queue
+import signal
 import subprocess
 import sys
 import threading
@@ -11,6 +12,7 @@ from pathlib import Path
 
 import rclpy
 from rclpy.node import Node
+from rclpy.signals import SignalHandlerOptions
 from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 from geometry_msgs.msg import WrenchStamped
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
@@ -18,7 +20,7 @@ from std_msgs.msg import Bool, String
 from std_srvs.srv import SetBool
 from rcl_interfaces.msg import ParameterDescriptor
 
-from .core import AnalogReader, Calibration
+from .core import AnalogReader, Calibration, initialize_runtime
 from .model import ReplayReader, transform_wrench
 
 
@@ -107,6 +109,14 @@ class ATIDAQNode(Node):
                 self.cal.close()
                 self.cal = None
             self.error = f"Calibration unavailable: {e}"
+        self.hardware_error = None
+        if self.cfg["source"] == "hardware":
+            try:
+                # ROS/DDS is initialized; keep NI's initializing thread alive to exit.
+                initialize_runtime()
+            except Exception as e:
+                self.hardware_error = str(e)
+                self.error = self.hardware_error
         self.publish_state()
         self.thread = threading.Thread(
             target=self.acquire, name="ati-acquisition", daemon=True
@@ -131,6 +141,8 @@ class ATIDAQNode(Node):
     def acquire(self):
         reader = None
         try:
+            if self.hardware_error:
+                raise RuntimeError(self.hardware_error)
             if self.cfg["source"] == "replay":
                 reader = ReplayReader(self.cfg["replay_csv"])
             else:
@@ -326,7 +338,10 @@ class ATIDAQNode(Node):
 
 
 def main():
-    rclpy.init()
+    # Keep the context valid until acquisition/NI teardown and final health publish.
+    rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
+    for signum in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(signum, signal.default_int_handler)
     node = None
     try:
         node = ATIDAQNode()
@@ -334,6 +349,10 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
+        # A terminal SIGINT can reach both launch and the node; launch then forwards
+        # it again. Let the bounded cleanup finish instead of interrupting it twice.
+        for signum in (signal.SIGINT, signal.SIGTERM):
+            signal.signal(signum, signal.SIG_IGN)
         if node:
             if rclpy.ok():
                 node.shutdown()

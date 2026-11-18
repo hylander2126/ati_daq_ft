@@ -13,6 +13,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runtime", required=True, type=Path)
     parser.add_argument("--cache", required=True, type=Path)
+    parser.add_argument(
+        "--skip-udev-reload",
+        action="store_true",
+        help="Write the rule but skip reload/trigger in a container without a udev daemon",
+    )
     args = parser.parse_args()
     if os.geteuid() != 0:
         parser.error("Run this one-time system setup with sudo")
@@ -37,6 +42,8 @@ def main():
         verify(path, item["sha256"])
         packages.append(str(path))
     # Deliberately do not install ni-pal: only libnipalu is used, no kernel modules.
+    # NI's USB post-install script assumes this standard directory already exists.
+    Path("/etc/modprobe.d").mkdir(parents=True, exist_ok=True)
     subprocess.run(["dpkg", "-i", *packages], check=True)
     for link, target in links.items():
         link.parent.mkdir(parents=True, exist_ok=True)
@@ -48,18 +55,19 @@ def main():
         'ATTR{idProduct}=="7269|726f", GROUP="plugdev", '
         'MODE="0660", TAG+="uaccess"\n'
     )
-    subprocess.run(["udevadm", "control", "--reload-rules"], check=True)
-    subprocess.run(
-        [
-            "udevadm",
-            "trigger",
-            "--action=change",
-            "--subsystem-match=usb",
-            "--attr-match=idVendor=3923",
-        ],
-        check=True,
-    )
-    subprocess.run(["udevadm", "settle"], check=True)
+    if not args.skip_udev_reload:
+        subprocess.run(["udevadm", "control", "--reload-rules"], check=True)
+        subprocess.run(
+            [
+                "udevadm",
+                "trigger",
+                "--action=change",
+                "--subsystem-match=usb",
+                "--attr-match=idVendor=3923",
+            ],
+            check=True,
+        )
+        subprocess.run(["udevadm", "settle"], check=True)
     print("VISA USB transport and USB-621x permissions configured. Replug the DAQ.")
 
 

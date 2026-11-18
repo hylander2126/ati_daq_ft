@@ -20,6 +20,7 @@ SciPy, PyDAQmx, nidaqmx Python package, requests, GUI toolkit, or robot stack.
 | `libnipalu.so.1` from ni-pal | Hardware USB transport | The library is loaded by VISA's USB path. Extract this one library; do not install ni-pal, ni-pal-support, or ni-pal-dkms. |
 | System `libexpat.so.1` | ROS/native coexistence | Loaded before LabVIEW's old exported expat symbols. All other loader settings remain local to the node. |
 | `libarchive-tools` (`bsdtar`), `dpkg-deb` | One-time setup | Read ISO/RPM/deb files. They are not node runtime requirements. `usbutils` is a diagnostic convenience. |
+| `udev` | Hardware system setup | Required explicitly by NI's USB package installer and for applying the device-access rule. Containers write the rule and skip daemon reload. |
 | pytest, `ament_index_python` | Tests only | Pure conversion tests plus an actual ROS replay subprocess. |
 
 The ATI library includes an old Expat copy, bound internally with `-Bsymbolic` so

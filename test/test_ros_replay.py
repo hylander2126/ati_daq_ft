@@ -146,3 +146,6 @@ def test_ros_calibrated_replay_and_retained_health(
         if rclpy.ok():
             rclpy.shutdown()
         print(output)
+        assert proc.returncode == 0, "Driver/launch failed during shutdown"
+        assert "Traceback" not in output
+        assert "process has died" not in output
